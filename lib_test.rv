@@ -1,0 +1,123 @@
+import std/string
+import std/test { assert_eq_str, assert_eq_int, assert_true, assert_msg }
+import "./lib" { Csv, Table, write }
+
+// Parse with `csv`, failing the test with the parse error if it does not parse.
+fun ok(csv: Csv, text: String) -> Table {
+    return match csv.parse(text) {
+        Ok(t) -> t,
+        Err(e) -> {
+            assert_msg(false, e.to_string())
+            let h: List<String> = []
+            let r: List<List<String>> = []
+            Table { headers: h, rows: r }
+        },
+    }
+}
+
+fun test_basic() {
+    let t = ok(Csv.new(), "a,b,c\n1,2,3\n")
+    assert_eq_int(t.row_count(), 2)
+    assert_eq_int(t.col_count(), 3)
+    assert_eq_str(t.get(0, 0), "a")
+    assert_eq_str(t.get(1, 2), "3")
+}
+
+fun test_quoted_with_comma_and_newline() {
+    let t = ok(Csv.new(), "\"a,b\",\"line1\nline2\",x\n")
+    assert_eq_int(t.row_count(), 1)
+    assert_eq_str(t.get(0, 0), "a,b")
+    assert_eq_str(t.get(0, 1), "line1\nline2")
+    assert_eq_str(t.get(0, 2), "x")
+}
+
+fun test_escaped_quotes() {
+    let t = ok(Csv.new(), "\"say \"\"hi\"\"\",end\n")
+    assert_eq_str(t.get(0, 0), "say \"hi\"")
+    assert_eq_str(t.get(0, 1), "end")
+}
+
+fun test_header_mode() {
+    let t = ok(Csv.new().with_header(), "name,age\nAlice,30\nBob,25\n")
+    assert_eq_int(t.row_count(), 2)
+    match t.field(0, "name") {
+        Some(v) -> assert_eq_str(v, "Alice"),
+        None -> assert_msg(false, "name"),
+    }
+    match t.field(1, "age") {
+        Some(v) -> assert_eq_str(v, "25"),
+        None -> assert_msg(false, "age"),
+    }
+    match t.field(0, "missing") {
+        Some(v) -> assert_msg(false, "should be none"),
+        None -> assert_true(true),
+    }
+}
+
+fun test_trim() {
+    let t = ok(Csv.new().trimmed(), "  a  , b ,c\n")
+    assert_eq_str(t.get(0, 0), "a")
+    assert_eq_str(t.get(0, 1), "b")
+    let q = ok(Csv.new().trimmed(), "\"  spaced  \"\n")
+    assert_eq_str(q.get(0, 0), "  spaced  ")
+}
+
+fun test_custom_delimiter() {
+    let t = ok(Csv.new().delimiter("\t"), "a\tb\tc\n")
+    assert_eq_int(t.col_count(), 3)
+    assert_eq_str(t.get(0, 1), "b")
+}
+
+fun test_blank_lines_skipped() {
+    let t = ok(Csv.new(), "a\n\n\nb\n")
+    assert_eq_int(t.row_count(), 2)
+    assert_eq_str(t.get(0, 0), "a")
+    assert_eq_str(t.get(1, 0), "b")
+}
+
+fun test_no_trailing_newline() {
+    let t = ok(Csv.new(), "x,y")
+    assert_eq_int(t.row_count(), 1)
+    assert_eq_str(t.get(0, 1), "y")
+}
+
+fun test_empty_fields() {
+    let t = ok(Csv.new(), "a,,c\n")
+    assert_eq_int(t.col_count(), 3)
+    assert_eq_str(t.get(0, 1), "")
+}
+
+fun test_unterminated_quote_errors() {
+    match Csv.new().parse("\"oops\n") {
+        Ok(t) -> assert_msg(false, "expected error"),
+        Err(e) -> assert_true(e.message.contains("unterminated")),
+    }
+}
+
+fun test_write_basic() {
+    let rows: List<List<String>> = []
+    let r0: List<String> = []
+    r0.push("a")
+    r0.push("b")
+    rows.push(r0)
+    assert_eq_str(write(rows), "a,b\n")
+}
+
+fun test_write_escapes() {
+    let rows: List<List<String>> = []
+    let r0: List<String> = []
+    r0.push("has,comma")
+    r0.push("has\"quote")
+    r0.push("plain")
+    rows.push(r0)
+    assert_eq_str(write(rows), "\"has,comma\",\"has\"\"quote\",plain\n")
+}
+
+fun test_round_trip() {
+    let original = "name,note\nAlice,\"hello, world\"\nBob,\"line1\nline2\"\n"
+    let t = ok(Csv.new().with_header(), original)
+    let back = write(t.rows)
+    let t2 = ok(Csv.new(), back)
+    assert_eq_str(t2.get(0, 1), "hello, world")
+    assert_eq_str(t2.get(1, 1), "line1\nline2")
+}
