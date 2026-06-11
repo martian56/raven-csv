@@ -1,16 +1,16 @@
 import std/string
 import std/test { assert_eq_str, assert_eq_int, assert_true, assert_msg }
-import "./lib" { Csv, Table, write }
+import "./lib" { Csv, Sheet, write }
 
 // Parse with `csv`, failing the test with the parse error if it does not parse.
-fun ok(csv: Csv, text: String) -> Table {
+fun ok(csv: Csv, text: String) -> Sheet {
     return match csv.parse(text) {
         Ok(t) -> t,
         Err(e) -> {
             assert_msg(false, e.to_string())
             let h: List<String> = []
             let r: List<List<String>> = []
-            Table { headers: h, rows: r }
+            Sheet { headers: h, rows: r }
         },
     }
 }

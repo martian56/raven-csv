@@ -1,6 +1,6 @@
 // raven-csv: read and write CSV (RFC 4180) in pure Raven.
 //
-//     import "github.com/martian56/raven-csv" { Csv, Table }
+//     import "github.com/martian56/raven-csv" { Csv, Sheet }
 //
 //     match Csv.new().with_header().parse(text) {
 //         Ok(table) -> {
@@ -36,12 +36,12 @@ impl ToString for CsvError {
 
 // A parsed CSV document: optional header names and the data rows. A row is a
 // list of string fields; rows may be ragged (different lengths).
-struct Table {
+struct Sheet {
     headers: List<String>,
     rows: List<List<String>>,
 }
 
-impl Table {
+impl Sheet {
     // The number of data rows (excluding the header).
     fun row_count(self) -> Int {
         return self.rows.len()
@@ -115,7 +115,7 @@ impl Csv {
         return Csv { delimiter: d, has_header: self.has_header, trim: self.trim }
     }
 
-    // Treat the first row as header names, accessible with `Table.field`.
+    // Treat the first row as header names, accessible with `Sheet.field`.
     fun with_header(self) -> Csv {
         return Csv { delimiter: self.delimiter, has_header: true, trim: self.trim }
     }
@@ -125,8 +125,8 @@ impl Csv {
         return Csv { delimiter: self.delimiter, has_header: self.has_header, trim: true }
     }
 
-    // Parse `text` into a `Table`. The only error is an unterminated quote.
-    fun parse(self, text: String) -> Result<Table, CsvError> {
+    // Parse `text` into a `Sheet`. The only error is an unterminated quote.
+    fun parse(self, text: String) -> Result<Sheet, CsvError> {
         let records: List<List<String>> = []
         let record = _new_row()
         let field = ""
@@ -193,7 +193,7 @@ impl Csv {
             record.push(self._finish(field, field_quoted))
             records.push(record)
         }
-        return Ok(self._to_table(records))
+        return Ok(self._to_sheet(records))
     }
 
     fun _finish(self, field: String, quoted: Bool) -> String {
@@ -203,7 +203,7 @@ impl Csv {
         return field
     }
 
-    fun _to_table(self, records: List<List<String>>) -> Table {
+    fun _to_sheet(self, records: List<List<String>>) -> Sheet {
         if self.has_header && records.len() > 0 {
             let headers = records[0]
             let rows: List<List<String>> = []
@@ -212,10 +212,10 @@ impl Csv {
                 rows.push(records[i])
                 i += 1
             }
-            return Table { headers, rows }
+            return Sheet { headers, rows }
         }
         let no_headers: List<String> = []
-        return Table { headers: no_headers, rows: records }
+        return Sheet { headers: no_headers, rows: records }
     }
 }
 

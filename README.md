@@ -75,9 +75,9 @@ needing a `match` everywhere.
 | `csv.delimiter(d)` | A copy using `d` as the field delimiter |
 | `csv.with_header()` | A copy that treats the first row as headers |
 | `csv.trimmed()` | A copy that trims unquoted fields |
-| `csv.parse(text)` | Parse into a `Table`, returns `Result<Table, CsvError>` |
+| `csv.parse(text)` | Parse into a `Sheet`, returns `Result<Sheet, CsvError>` |
 
-### `Table`
+### `Sheet`
 
 `headers: List<String>` and `rows: List<List<String>>` are public fields.
 
