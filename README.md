@@ -1,5 +1,7 @@
 # raven-csv
 
+[![CI](https://github.com/martian56/raven-csv/actions/workflows/ci.yml/badge.svg)](https://github.com/martian56/raven-csv/actions/workflows/ci.yml)
+
 A CSV reader and writer for Raven that follows RFC 4180. Quoted fields can hold
 commas, newlines, and doubled-up quotes, and on the way out a field is only
 quoted when it actually needs to be. It's all in `lib.rv`, with no dependencies.
@@ -8,12 +10,12 @@ quoted when it actually needs to be. It's all in `lib.rv`, with no dependencies.
 
 ```toml
 [dependencies]
-"github.com/martian56/raven-csv" = "0.1"
+"github.com/martian56/raven-csv" = "v0.3.0"
 ```
 
 ## Reading
 
-```raven
+```rust
 import "github.com/martian56/raven-csv" { Csv }
 
 fun main() {
@@ -30,7 +32,7 @@ fun main() {
 
 The reader is set up with a few chained calls, each returning a fresh copy:
 
-```raven
+```rust
 Csv.new()                  // comma delimiter, no header row, no trimming
 Csv.new().with_header()    // first row becomes the header names
 Csv.new().delimiter("\t")  // tab-separated instead
@@ -50,7 +52,7 @@ csv:3: unterminated quoted field
 that contains a comma, a quote, or a line break gets wrapped in quotes; the rest
 are left as they are.
 
-```raven
+```rust
 import "github.com/martian56/raven-csv" { write }
 
 let out = write(rows)

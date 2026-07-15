@@ -248,7 +248,9 @@ fun write_with(rows: List<List<String>>, delimiter: String) -> String {
 // Quote a field when it contains the delimiter, a quote, or a line break,
 // doubling any embedded quotes.
 fun _escape(field: String, delimiter: String) -> String {
-    let risky = field.contains(delimiter) || field.contains("\"") || field.contains("\n") || field.contains("\r")
+    let risky = field.contains(delimiter) || field.contains("\"") || field.contains("\n") || field.contains(
+        "\r",
+    )
     if risky {
         return "\"".concat(field.replace("\"", "\"\"")).concat("\"")
     }
