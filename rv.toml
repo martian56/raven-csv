@@ -1,6 +1,6 @@
 [package]
 name = "raven-csv"
 version = "0.3.0"
-edition = "v2"
+edition = "v3"
 
 [dependencies]
