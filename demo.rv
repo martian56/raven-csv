@@ -1,15 +1,15 @@
 // A quick tour of raven-csv. Build and run with:
-//   raven build demo.rv -o demo && ./demo
-import std/io { print, println }
-import "./lib" { Csv, write }
+//   raven build demo.rv -o demo and ./demo
+from std.io import print, println
+from "./lib" import Csv, write
 
 fun main() {
     let text = "name,city,age\nAlice,\"New York, NY\",30\nBob,Boston,25\n"
 
     println("== parsed (with header) ==")
     match Csv.new().with_header().parse(text) {
-        Ok(t) -> {
-            let i = 0
+        case Ok(t) {
+            var i = 0
             while i < t.row_count() {
                 println(t.get(i, 0).concat(" lives in ").concat(t.get(i, 1)))
                 i += 1
@@ -17,7 +17,7 @@ fun main() {
             println("")
             println("== written back to CSV ==")
             print(write(t.rows))
-        },
-        Err(e) -> println(e.to_string()),
+        }
+        case Err(e) { println(e.to_string()) }
     }
 }

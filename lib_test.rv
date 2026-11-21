@@ -1,17 +1,17 @@
-import std/string
-import std/test { assert_eq_str, assert_eq_int, assert_true, assert_msg }
-import "./lib" { Csv, Table, write }
+import std.string
+from std.test import assert_eq_str, assert_eq_int, assert_true, assert_msg
+from "./lib" import Csv, Table, write
 
 // Parse with `csv`, failing the test with the parse error if it does not parse.
-fun ok(csv: Csv, text: String) -> Table {
+fun ok(csv: Csv, text: str) -> Table {
     return match csv.parse(text) {
-        Ok(t) -> t,
-        Err(e) -> {
+        case Ok(t) { t }
+        case Err(e) {
             assert_msg(false, e.to_string())
-            let h: List<String> = []
-            let r: List<List<String>> = []
-            Table { headers: h, rows: r }
-        },
+            let h: list[str] = []
+            let r: list[list[str]] = []
+            Table(headers: h, rows: r)
+        }
     }
 }
 
@@ -41,16 +41,16 @@ fun test_header_mode() {
     let t = ok(Csv.new().with_header(), "name,age\nAlice,30\nBob,25\n")
     assert_eq_int(t.row_count(), 2)
     match t.field(0, "name") {
-        Some(v) -> assert_eq_str(v, "Alice"),
-        None -> assert_msg(false, "name"),
+        case Some(v) { assert_eq_str(v, "Alice") }
+        case None { assert_msg(false, "name") }
     }
     match t.field(1, "age") {
-        Some(v) -> assert_eq_str(v, "25"),
-        None -> assert_msg(false, "age"),
+        case Some(v) { assert_eq_str(v, "25") }
+        case None { assert_msg(false, "age") }
     }
     match t.field(0, "missing") {
-        Some(v) -> assert_msg(false, "should be none"),
-        None -> assert_true(true),
+        case Some(v) { assert_msg(false, "should be none") }
+        case None { assert_true(true) }
     }
 }
 
@@ -89,14 +89,14 @@ fun test_empty_fields() {
 
 fun test_unterminated_quote_errors() {
     match Csv.new().parse("\"oops\n") {
-        Ok(t) -> assert_msg(false, "expected error"),
-        Err(e) -> assert_true(e.message.contains("unterminated")),
+        case Ok(t) { assert_msg(false, "expected error") }
+        case Err(e) { assert_true(e.message.contains("unterminated")) }
     }
 }
 
 fun test_write_basic() {
-    let rows: List<List<String>> = []
-    let r0: List<String> = []
+    let rows: list[list[str]] = []
+    let r0: list[str] = []
     r0.push("a")
     r0.push("b")
     rows.push(r0)
@@ -104,8 +104,8 @@ fun test_write_basic() {
 }
 
 fun test_write_escapes() {
-    let rows: List<List<String>> = []
-    let r0: List<String> = []
+    let rows: list[list[str]] = []
+    let r0: list[str] = []
     r0.push("has,comma")
     r0.push("has\"quote")
     r0.push("plain")

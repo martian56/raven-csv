@@ -10,22 +10,22 @@ quoted when it actually needs to be. It's all in `lib.rv`, with no dependencies.
 
 ```toml
 [dependencies]
-"github.com/martian56/raven-csv" = "v0.3.0"
+"github.com/martian56/raven-csv" = "v0.4.0"
 ```
 
 ## Reading
 
 ```rust
-import "github.com/martian56/raven-csv" { Csv }
+from "github.com/martian56/raven-csv" import Csv
 
 fun main() {
     let text = "name,city\nAlice,\"New York, NY\"\nBob,Boston\n"
     match Csv.new().with_header().parse(text) {
-        Ok(table) -> {
-            let city = table.field(0, "city")   // Some("New York, NY")
-            let who = table.get(1, 0)           // "Bob"
-        },
-        Err(e) -> print(e.to_string()),
+        case Ok(table) {
+            let city = table.field(0, "city") // Some("New York, NY")
+            let who = table.get(1, 0) // "Bob"
+        }
+        case Err(e) { print(e.to_string()) }
     }
 }
 ```
@@ -53,7 +53,7 @@ that contains a comma, a quote, or a line break gets wrapped in quotes; the rest
 are left as they are.
 
 ```rust
-import "github.com/martian56/raven-csv" { write }
+from "github.com/martian56/raven-csv" import write
 
 let out = write(rows)
 ```
@@ -63,7 +63,7 @@ Use `write_with` if you want a delimiter other than a comma.
 ## A couple of details
 
 Rows can be ragged, so a short row is fine. `field` looks a cell up by its
-header name and gives you an `Option<String>`. `get` indexes by row and column
+header name and gives you an `Option[str]`. `get` indexes by row and column
 and just returns `""` when you run off the edge, which keeps call sites from
 needing a `match` everywhere.
 
@@ -77,11 +77,11 @@ needing a `match` everywhere.
 | `csv.delimiter(d)` | A copy using `d` as the field delimiter |
 | `csv.with_header()` | A copy that treats the first row as headers |
 | `csv.trimmed()` | A copy that trims unquoted fields |
-| `csv.parse(text)` | Parse into a `Table`, returns `Result<Table, CsvError>` |
+| `csv.parse(text)` | Parse into a `Table`, returns `Result[Table, CsvError]` |
 
 ### `Table`
 
-`headers: List<String>` and `rows: List<List<String>>` are public fields.
+`headers: list[str]` and `rows: list[list[str]]` are public fields.
 
 | Method | Description |
 |--------|-------------|
@@ -89,7 +89,7 @@ needing a `match` everywhere.
 | `t.col_count()` | Column count, from the header if present, else the first row |
 | `t.row(i)` | The row at `i` (empty when out of range) |
 | `t.get(row, col)` | The cell, or `""` when out of range |
-| `t.field(row, name)` | The cell under header `name`, as `Option<String>` |
+| `t.field(row, name)` | The cell under header `name`, as `Option[str]` |
 
 ### Functions
 
