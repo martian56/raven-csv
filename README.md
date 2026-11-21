@@ -10,7 +10,7 @@ quoted when it actually needs to be. It's all in `lib.rv`, with no dependencies.
 
 ```toml
 [dependencies]
-"github.com/martian56/raven-csv" = "v0.3.0"
+"github.com/martian56/raven-csv" = "v0.4.0"
 ```
 
 ## Reading
